@@ -47,7 +47,7 @@ SCORE_WEIGHTS = {
 JD_KEYWORD_WEIGHT = 0.6
 JD_SEMANTIC_WEIGHT = 0.4
 
-SUPABASE_URL = os.getenv("SUPABASE_URL", "")
+SUPABASE_URL = os.getenv("SUPABASE_URL", "").strip()
 from urllib.parse import urlparse
 
 _parsed = urlparse(SUPABASE_URL)
