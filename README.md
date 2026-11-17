@@ -1,102 +1,164 @@
-# ATS Resume Scorer
+# ATS Resume Checker
 
-A web app that scores how well a resume matches a job description and returns actionable feedback. Built with FastAPI + Streamlit, using spaCy and Sentence Transformers for NLP and the Groq API for LLM-generated suggestions.
+An AI-assisted resume analysis application that evaluates a resume against a job description and provides an ATS score, keyword insights, and improvement feedback.
 
-## What it does
+## Live deployment
 
-1. Upload a resume (PDF / DOC / DOCX) and paste a job description.
-2. The backend parses the resume, extracts skills and experience, and compares them to the JD using semantic similarity.
-3. You get an ATS score, a breakdown by category (formatting, keywords, content, skill validation, ATS compatibility), and LLM-written suggestions for what to improve.
-4. Past analyses are saved to your account so you can revisit them.
+- **Backend API:** https://ats-resume-checker-oghk.onrender.com
+- **API documentation (Swagger):** https://ats-resume-checker-oghk.onrender.com/docs
+- **Backend health endpoint:** https://ats-resume-checker-oghk.onrender.com/api/v1/health
+- **Frontend:** The Streamlit frontend URL has not yet been added. Add the public Streamlit deployment URL here once confirmed.
 
-## Tech stack
+> The backend is hosted on Render. The free Render instance may spin down after inactivity, so the first request can take longer while it starts.
+
+## Features
+
+- Upload resumes in PDF, DOC, and DOCX formats.
+- Extract resume details such as skills, education, experience, projects, and certifications.
+- Compare resume content with a supplied job description.
+- Generate an ATS score and category-level feedback.
+- Identify relevant and missing keywords.
+- Provide AI-assisted parsing and recommendations using Groq.
+- Sign in and manage a user account with Supabase authentication.
+- Save and review previous analyses.
+- Generate downloadable PDF reports (where enabled in the app).
+
+## Technology stack
 
 - **Frontend:** Streamlit
-- **Backend:** FastAPI (Python)
-- **NLP:** spaCy (`en_core_web_md`), Sentence Transformers (`all-MiniLM-L6-v2`)
-- **LLM:** Groq API (Llama 3)
-- **Auth + Database:** Supabase (email/password and Google OAuth)
-- **PDF report export:** WeasyPrint + Jinja2
+- **Backend:** FastAPI and Uvicorn
+- **Resume parsing / NLP:** Python and spaCy
+- **AI parsing:** Groq API
+- **Authentication and database:** Supabase
+- **HTTP/API communication:** Requests and HTTPX
 
-## Project structure
+## Repository structure
 
+```text
+ATS-RESUME-CHECKER/
+├── backend/
+│   ├── api/              # API routes and authentication
+│   ├── core/             # Application configuration
+│   ├── database/         # Supabase database operations
+│   ├── services/         # Resume parsing, scoring and report services
+│   └── main.py           # FastAPI application entry point
+├── frontend/
+│   ├── services/         # Supabase and backend API clients
+│   ├── views/            # Streamlit application views
+│   └── streamlit_app.py  # Streamlit application entry point
+└── README.md
 ```
-ATS_SCORER/
-├── backend/              FastAPI app, NLP services, API routes
-├── frontend/             Streamlit app, views, components
-├── jupyter notebooks/    Research and dataset prep (not used at runtime)
-├── ml model/             Exported ML artifacts
-├── requirements.txt      Combined backend + frontend dependencies
-└── .env.example          Template for environment variables
-```
 
-## Setup
+## Run locally
 
-### 1. Clone and create a virtual environment
+### 1. Clone the repository
 
 ```bash
-git clone <repo-url>
-cd ATS_SCORER
-python -m venv venv
-source venv/bin/activate         # Windows: venv\Scripts\activate
+git clone https://github.com/karanpruthi1903-pixel/ATS-RESUME-CHECKER.git
+cd ATS-RESUME-CHECKER
 ```
 
-### 2. Install dependencies
+### 2. Create and activate a virtual environment
+
+Windows PowerShell:
+
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+```
+
+macOS / Linux:
 
 ```bash
-pip install -r requirements.txt
-python -m spacy download en_core_web_md
+python -m venv .venv
+source .venv/bin/activate
 ```
 
-WeasyPrint needs system libraries on Linux:
+### 3. Install backend dependencies
 
 ```bash
-# Fedora
-sudo dnf install -y cairo pango gdk-pixbuf2 libffi
-
-# Debian / Ubuntu
-sudo apt install -y libcairo2 libpango-1.0-0 libpangoft2-1.0-0 libffi-dev
+pip install -r backend/requirements.txt
+python -m spacy download en_core_web_sm
 ```
 
-### 3. Configure environment variables
+Install the frontend dependencies used by the Streamlit app if they are not already included in your environment.
 
-Copy the template and fill in your keys:
+### 4. Configure environment variables
+
+Create a root-level `.env` file. Do not commit this file.
+
+Configure the values required by your deployment:
+
+```env
+SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
+SUPABASE_KEY=YOUR_BACKEND_SUPABASE_SECRET_OR_SERVICE_ROLE_KEY
+SUPABASE_ANON_KEY=YOUR_SUPABASE_PUBLIC_PUBLISHABLE_OR_ANON_KEY
+SUPABASE_JWT_SECRET=YOUR_LEGACY_JWT_SECRET_IF_REQUIRED
+GROQ_API_KEY=YOUR_GROQ_API_KEY
+```
+
+The Streamlit frontend also reads its backend URL from `frontend/.streamlit/secrets.toml`:
+
+```toml
+[backend]
+url = "http://127.0.0.1:8000"
+```
+
+Configure the frontend's Supabase settings in its Streamlit secrets or environment configuration as required by `frontend/services/supabase_client.py`.
+
+**Security:** Never commit `.env`, `.streamlit/secrets.toml`, Supabase secret/service-role keys, JWT secrets, or Groq API keys. Use environment variables or the hosting provider's secret manager.
+
+### 5. Start the backend
+
+From the repository root:
 
 ```bash
-cp .env.example .env
+uvicorn backend.main:app --host 127.0.0.1 --port 8000
 ```
 
-You need:
+Backend API: http://127.0.0.1:8000  
+Interactive API docs: http://127.0.0.1:8000/docs
 
-- A **Supabase** project — grab `SUPABASE_URL`, `SUPABASE_KEY` (service role), and `SUPABASE_ANON_KEY` from Project Settings → API.
-- A **Groq** API key from [console.groq.com](https://console.groq.com).
-- (Optional) Google OAuth set up in the Supabase dashboard if you want Google sign-in.
+### 6. Start the Streamlit frontend
 
-The Streamlit frontend also reads Supabase config from `frontend/.streamlit/secrets.toml`. Copy `secrets.toml.example` to `secrets.toml` and fill it in.
-
-### 4. Run the backend
-
-From the project root:
+Open a second terminal, move into the frontend directory, and run:
 
 ```bash
-uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
+cd frontend
+streamlit run streamlit_app.py
 ```
 
-The API is now at `http://localhost:8000`.
+Streamlit normally opens at http://localhost:8501.
 
-### 5. Run the frontend
+## Deployment
 
-In a new terminal (with the venv activated):
+### Backend on Render
 
-```bash
-streamlit run frontend/streamlit_app.py
+The deployed backend uses:
+
+- **Build command:** `pip install -r backend/requirements.txt && python -m spacy download en_core_web_sm`
+- **Start command:** `uvicorn backend.main:app --host 0.0.0.0 --port $PORT`
+
+Set the required environment variables in the Render service's Environment settings. Do not place secret values in source code or GitHub.
+
+### Frontend
+
+Deploy the Streamlit frontend separately using Streamlit Community Cloud or another supported hosting provider. Configure its Supabase settings and set the backend URL to:
+
+```text
+https://ats-resume-checker-oghk.onrender.com
 ```
 
-The app opens at `http://localhost:8501`.
+Add the public frontend URL to the Live deployment section above after deployment.
 
-## Notes for students
+## API endpoints
 
-- **Never commit `.env` or `secrets.toml`** — they hold API keys. Both are in `.gitignore`; check before you push.
-- The first run downloads the Sentence Transformer model (~80 MB). It's cached afterwards.
-- If you don't have a Groq key yet, the scoring still works — only the LLM suggestions section will be empty.
-- `jupyter notebooks/` and `ml model/` are for experimentation and aren't required to run the app.
+The deployed API's interactive documentation lists the available routes:
+
+https://ats-resume-checker-oghk.onrender.com/docs
+
+## Notes
+
+- Resume uploads are limited by the backend's configured file-size and file-type restrictions.
+- The Render free instance may sleep after inactivity.
+- Keep all credentials in local environment files or hosting-provider secrets, never in Git.
