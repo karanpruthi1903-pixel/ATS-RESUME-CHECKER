@@ -7,7 +7,7 @@ An AI-assisted resume analysis application that evaluates a resume against a job
 - **Backend API:** https://ats-resume-checker-oghk.onrender.com
 - **API documentation (Swagger):** https://ats-resume-checker-oghk.onrender.com/docs
 - **Backend health endpoint:** https://ats-resume-checker-oghk.onrender.com/api/v1/health
-- **Frontend:** The Streamlit frontend URL has not yet been added. Add the public Streamlit deployment URL here once confirmed.
+- **Frontend (Streamlit):** https://ai-attendance-landing-vu94abtqktwvcfnyeuxwe.streamlit.app/
 
 > The backend is hosted on Render. The free Render instance may spin down after inactivity, so the first request can take longer while it starts.
 
@@ -149,7 +149,7 @@ Deploy the Streamlit frontend separately using Streamlit Community Cloud or anot
 https://ats-resume-checker-oghk.onrender.com
 ```
 
-Add the public frontend URL to the Live deployment section above after deployment.
+The public Streamlit frontend is available at https://ai-attendance-landing-vu94abtqktwvcfnyeuxwe.streamlit.app/. Confirm that this deployment is connected to this ATS-RESUME-CHECKER repository and that its deployed version is current.
 
 ## API endpoints
 
